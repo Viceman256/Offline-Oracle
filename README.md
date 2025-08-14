@@ -31,8 +31,8 @@ Imagine having an entire copy of Wikipedia offline and being able to ask it comp
 2.  **Run the Interactive Setup:**
     This script will guide you through creating a virtual environment and installing all required packages. It will automatically ask if you want to install CPU or GPU (NVIDIA) versions of the dependencies.
 
-    -   On **Windows**, double-click `1-Setup.bat`.
-    -   On **Linux or macOS**, run: `bash 1-Setup.sh`
+    -   On **Windows**, double-click `1-Setup_Oracle.bat`.
+    -   On **Linux or macOS**, run: `bash 1-Setup_Oracle.sh`
 
 ## Usage
 
