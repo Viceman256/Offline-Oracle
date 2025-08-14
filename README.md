@@ -77,7 +77,7 @@ If you are using a large local model on a CPU, you might see a `ReadTimeout` err
 
 You may notice that different LLMs produce very different answers even with the same information.
 -   **Local Models (e.g., Mistral via LM Studio):** These models tend to be very literal. They will follow the system prompt's instructions precisely, resulting in perfectly synthesized and cited answers built *only* from the text you provide.
--   **Advanced API Models (e.g., GPT-4o, Claude 3):** These models are heavily tuned for "helpfulness" and safety. Sometimes, they will recognize a topic (like "heart failure treatment") and generate a high-quality, generic answer from their internal knowledge, only "cherry-picking" one or two citations from your provided text.
+-   **Advanced API Models (e.g., GPT-4o, Claude 3):** These models are heavily tuned for "helpfulness" and safety. Sometimes, they will recognize a topic (like "heart failure treatment") and generate a high-quality, generic answer from their internal knowledge, only "cherry-picking" one or two citations from your provided text. Additionally, I have seen Google send blank responses when it hits a safety filter.
 -   This is not a bug in Offline Oracle, but an inherent behavioral trait of the LLM. If you need strictly verifiable answers, a local model may perform more reliably than a powerful-but-creative API model.
 
 ## A Note on API vs. Offline Use
