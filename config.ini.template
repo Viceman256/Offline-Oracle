@@ -1,0 +1,88 @@
+# =============================================================================
+# Configuration for the Offline Oracle Toolkit
+# =============================================================================
+#
+# Instructions:
+# 1. Rename this file to "config.ini".
+# 2. Fill in the required paths and settings below.
+#
+# =============================================================================
+
+[Paths]
+# A comma-separated list of the ZIM files you want to index.
+# Use forward slashes for paths, even on Windows.
+# Example: C:/Users/Me/RAG/zim_files/wikipedia.zim
+zim_files = 
+
+# The base path for the output files. The script will create a .faiss and .sqlite file.
+# Example: C:/Users/Me/RAG/db/my_knowledge_base
+output_path = 
+
+[Builder]
+# The AI model used to create embeddings (numerical representations of text).
+# 'intfloat/multilingual-e5-large-instruct' is powerful and multilingual.
+# For a smaller, English-only model, use 'all-MiniLM-L6-v2'.
+embedding_model = intfloat/multilingual-e5-large-instruct
+embedding_dimension = 1024
+batch_size = 256
+# Number of CPU processes for parsing. 0 = auto-detect (recommended).
+# On systems with many cores but limited RAM, set to a specific number (e.g., 4)
+# to prevent memory exhaustion.
+num_workers = 30
+
+# Add comma-separated paths/keywords to exclude from indexing.
+# These defaults cover common system pages for StackExchange and Wikipedia.
+path_exclude_patterns = api/, search?, users/, Special:, Help:, Template:, Category:, User:, MediaWiki:, Talk:
+
+[Server]
+# Network settings for the RAG server.
+host = 0.0.0.0
+port = 1255
+# Timeout in seconds for requests to the LLM backend.
+# Increase this value if you experience timeouts with slow local models.
+request_timeout = 300.0
+
+[RAG]
+# How many matching text chunks to retrieve from the knowledge base.
+top_k = 15
+# Maximum number of tokens to use for the context provided to the LLM.
+token_budget = 8192
+# A prefix added to models in UIs like OpenWebUI to show they are RAG-enabled.
+model_prefix = Oracle-
+
+# =============================================================================
+# LLM Provider Configuration
+# =============================================================================
+
+[LLM]
+# Choose your primary LLM provider.
+# Options: 'openai-compatible', 'ollama', 'openai', 'anthropic', 'google'
+provider = openai-compatible
+
+# --- Settings for 'openai-compatible' provider (LM Studio, etc.) ---
+[openai-compatible]
+# The base URL of your local LLM server. Do NOT include /v1.
+backend_url = http://localhost:1234
+
+# --- Settings for 'ollama' provider ---
+[ollama]
+# The base URL of your local Ollama server.
+backend_url = http://localhost:11434
+
+# --- Settings for 'openai' provider ---
+[openai]
+# For security, set an environment variable OPENAI_API_KEY.
+api_key = 
+model = gpt-5-mini
+
+# --- Settings for 'anthropic' provider ---
+[anthropic]
+# For security, set an environment variable ANTHROPIC_API_KEY.
+api_key = 
+model = claude-sonnet-4-20250514
+
+# --- Settings for 'google' provider ---
+[google]
+# For security, set an environment variable GOOGLE_API_KEY.
+api_key = 
+model = gemini-2.5-pro
