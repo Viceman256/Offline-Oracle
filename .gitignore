@@ -1,0 +1,18 @@
+# Python virtual environment
+venv/
+
+# Python cache files
+__pycache__/
+*.pyc
+
+# User-specific configuration file (contains API keys!)
+config.ini
+
+# User-generated knowledge base files (can be very large!)
+db/
+*.faiss
+*.sqlite
+
+# IDE/Editor specific folders
+.vscode/
+.idea/

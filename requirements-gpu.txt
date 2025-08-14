@@ -1,0 +1,23 @@
+# Core
+fastapi
+uvicorn[standard]
+# PyTorch for CUDA is installed separately but listed for clarity.
+# Ensure your PyTorch version matches your CUDA version (e.g., 12.1).
+torch --index-url https://download.pytorch.org/whl/cu121
+libzim
+bs4
+lxml
+tqdm
+# Make sure the faiss-gpu version matches your CUDA toolkit version.
+faiss-gpu==1.8.0
+
+# Models & Tokenizers
+sentence-transformers
+tiktoken
+numpy==1.26.4
+
+# API Clients
+httpx
+openai
+anthropic
+google-generativeai

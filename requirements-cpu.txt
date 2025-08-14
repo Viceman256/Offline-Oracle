@@ -1,0 +1,20 @@
+# Core
+fastapi
+uvicorn[standard]
+torch
+libzim
+bs4
+lxml
+tqdm
+faiss-cpu==1.8.0
+
+# Models & Tokenizers
+sentence-transformers
+tiktoken
+numpy==1.26.4
+
+# API Clients
+httpx
+openai
+anthropic
+google-generativeai
