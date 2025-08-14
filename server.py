@@ -91,17 +91,27 @@ class Retriever:
     def close(self):
         self.db_conn.close()
 
-def build_rag_prompt(query: str, request: Request) -> str:
+def build_rag_prompt(query: str, request: Request, conversation_mode: bool = False) -> str:
     config = request.app.state.config
     retriever = request.app.state.retriever
     tokenizer = request.app.state.tokenizer
     archives = request.app.state.zim_archives
     token_budget = config.getint('RAG', 'token_budget')
     
-    docs = retriever.search(query, request)
-    if not docs:
-        log.warning(f"No documents found for query: '{query}'")
-        return ""
+    # Check if we're in conversation mode and have existing context
+    if conversation_mode and hasattr(request.app.state, 'conversation_context'):
+        docs = request.app.state.conversation_context
+        log.info(f"Using existing conversation context for query '{query}'")
+    else:
+        docs = retriever.search(query, request)
+        if not docs:
+            log.warning(f"No documents found for query: '{query}'")
+            return ""
+        
+        # If in conversation mode, save the context for future use
+        if conversation_mode:
+            request.app.state.conversation_context = docs
+            log.info(f"Saved new conversation context for query '{query}'")
 
     retrieved_titles = [d['title'] for d in docs]
     log.info(f"Retrieved context for query '{query}': {retrieved_titles}")
@@ -300,17 +310,46 @@ async def completions(req: ChatRequest, request: Request):
     if not request.app.state.retriever:
         raise HTTPException(status_code=503, detail="Knowledge Base not built or loaded.")
     
-    # In this robust model, every user query that is part of the RAG interaction
-    # will trigger a search. This ensures maximum verifiability.
-    # The 'query' for the search is always the most recent user message.
-    query = next((m["content"] for m in reversed(req.messages) if m["role"] == "user"), None)
-    if not query:
+    # Check if conversation mode is enabled
+    conversation_mode = request.app.state.config.getboolean('RAG', 'conversation_mode', fallback=False)
+    
+    # Check for special commands to control conversation mode
+    latest_user_message = next((m["content"] for m in reversed(req.messages) if m["role"] == "user"), None)
+    if not latest_user_message:
         raise HTTPException(status_code=400, detail="No user query found in the message history.")
     
-    log.info(f"Performing RAG search for the latest query.")
-    system_prompt = build_rag_prompt(query, request)
-    if not system_prompt:
-        return JSONResponse(content={"choices": [{"message": {"role": "assistant", "content": "The provided knowledge base does not contain sufficient information to answer this question."}}]})
+    # Handle special commands
+    if latest_user_message.strip().lower() == "/reset":
+        if hasattr(request.app.state, 'conversation_context'):
+            delattr(request.app.state, 'conversation_context')
+            return JSONResponse(content={"choices": [{"message": {"role": "assistant", "content": "Conversation context has been reset."}}]})
+        else:
+            return JSONResponse(content={"choices": [{"message": {"role": "assistant", "content": "No conversation context to reset."}}]})
+    
+    if latest_user_message.strip().lower() == "/status":
+        mode = "conversation" if conversation_mode else "pure RAG"
+        context = "active" if hasattr(request.app.state, 'conversation_context') else "inactive"
+        return JSONResponse(content={"choices": [{"message": {"role": "assistant", "content": f"Current mode: {mode}. Conversation context: {context}."}}]})
+    
+    # Determine if we should perform a search
+    perform_search = True
+    if conversation_mode and hasattr(request.app.state, 'conversation_context'):
+        # In conversation mode with existing context, only search on first message
+        # (unless it's a follow-up to a reset)
+        perform_search = False
+    
+    # Perform RAG search if needed
+    query = latest_user_message
+    if perform_search:
+        log.info(f"Performing RAG search for the latest query.")
+        system_prompt = build_rag_prompt(query, request, conversation_mode)
+        if not system_prompt:
+            return JSONResponse(content={"choices": [{"message": {"role": "assistant", "content": "The provided knowledge base does not contain sufficient information to answer this question."}}]})
+    else:
+        # Use existing context in conversation mode
+        system_prompt = build_rag_prompt(query, request, conversation_mode)
+        if not system_prompt:
+            return JSONResponse(content={"choices": [{"message": {"role": "assistant", "content": "The provided knowledge base does not contain sufficient information to answer this question."}}]})
     
     # Construct the final message list for the LLM
     final_messages = [{"role": "system", "content": system_prompt}]

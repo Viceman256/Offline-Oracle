@@ -1,6 +1,6 @@
 # Offline Oracle
 
-Offline Oracle is a powerful, universal toolkit designed to transform any offline ZIM file archive (like Wikipedia, Stack Exchange, or medical manuals) into a private, verifiable, and conversational knowledge base.
+Offline Oracle is a powerful, universal toolkit designed to transform any offline ZIM file archive (like Wikipedia, StackExchange, or medical manuals) into a private, verifiable, and conversational knowledge base.
 
 The core purpose is to allow users to have intelligent, cited conversations with their own data. By forcing a Large Language Model (LLM) to answer questions using only facts retrieved from your trusted ZIM files, Offline Oracle creates a system that provides reliable, fact-based answers, effectively eliminating model hallucination.
 
@@ -19,20 +19,22 @@ Imagine having an entire copy of Wikipedia offline and being able to ask it comp
     -   **Offline Ollama Models:** Native support for local Ollama instances.
     -   **Online API Providers:** Full support for `OpenAI`, `Anthropic (Claude)`, and `Google (Gemini)`.
 -   **Verifiable & Cited Answers:** The system prompt is engineered to force the LLM to cite the source article for every piece of information it provides.
+-   **Conversation Mode:** Enable contextual conversations where follow-up questions reuse the same source material, creating a more coherent dialogue.
+-   **Context Reset:** Reset conversation context on-demand to start fresh queries while maintaining the conversation mode setting.
 
 ## Installation
 
 1.  **Clone the Repository:**
     ```bash
     git clone https://github.com/Viceman256/Offline-Oracle.git
-    cd offline-oracle
+    cd Offline-Oracle
     ```
 
 2.  **Run the Interactive Setup:**
     This script will guide you through creating a virtual environment and installing all required packages. It will automatically ask if you want to install CPU or GPU (NVIDIA) versions of the dependencies.
 
-    -   On **Windows**, double-click `1-Setup_Oracle.bat`.
-    -   On **Linux or macOS**, run: `bash 1-Setup_Oracle.sh`
+    -   On **Windows**, double-click `1-Setup.bat`.
+    -   On **Linux or macOS**, run: `bash 1-Setup.sh`
 
 ## Usage
 
@@ -41,6 +43,7 @@ Imagine having an entire copy of Wikipedia offline and being able to ask it comp
     -   Open `config.ini` and edit the `[Paths]` section to point to your ZIM files and desired output location.
     -   In the `[LLM]` section, set your desired `provider`. If using a local model, ensure the `backend_url` is correct. If using an API, fill in your `api_key` and desired `model`.
     -   Review other settings in the `[RAG]`, `[Server]`, and `[Builder]` sections to fine-tune performance.
+    -   Set `conversation_mode = true` in the `[RAG]` section to enable conversation mode by default.
 
 2.  **Build the Knowledge Base:**
     This step processes your ZIM files and creates the searchable database. It can take a very long time, especially on a CPU. You can safely stop the process (`Ctrl+C`) and run the script again to resume where it left off.
@@ -59,6 +62,11 @@ Imagine having an entire copy of Wikipedia offline and being able to ask it comp
     -   In the connection settings, point it to the Offline Oracle server address (by default: `http://localhost:1255`).
     -   You should now see your models listed with an "Oracle-" prefix. Select one and start your conversation!
 
+5.  **Using Conversation Mode:**
+    -   With `conversation_mode = true` in your config, the first question in a conversation will retrieve relevant documents, and subsequent questions will reuse those documents.
+    -   To reset the context and perform a new search, send the special command `/reset` as your message.
+    -   To check the current conversation status, send the special command `/status` as your message.
+
 ## Advanced Configuration & Troubleshooting
 
 #### Optimizing `num_workers` for the Build Process
@@ -66,19 +74,19 @@ Imagine having an entire copy of Wikipedia offline and being able to ask it comp
 In `config.ini`, the `num_workers` setting controls how many parallel processes are used to parse ZIM files.
 -   By default (`num_workers = 0`), the script tries to pick a safe number. It detects your computer's **logical cores** (e.g., a 32-core CPU with SMT/Hyper-Threading has 64 logical cores) but caps the number of workers at 16.
 -   This cap is a safety measure to prevent systems with many cores but limited RAM from crashing. Each worker uses a significant amount of memory.
--   **For powerful servers, you should manually set this value.** A good starting point is the number of **physical cores** your CPU has. 
+-   **For powerful servers (like your 32-core, 256GB RAM machine), you should manually set this value.** A good starting point is the number of **physical cores** your CPU has.
 
 #### Fixing `ReadTimeout` Errors with Local Models
 
 If you are using a large local model on a CPU, you might see a `ReadTimeout` error in the server console. This means the model took too long to start generating its response.
 -   **Solution:** In `config.ini`, increase the `request_timeout` value in the `[Server]` section. The default is `300.0` (5 minutes), which should be enough for most models, but you can increase it further if needed.
 
-#### Understanding Model Behavior: "Lazy" vs. Literal Answers
+#### Understanding Model Behavior
 
 You may notice that different LLMs produce very different answers even with the same information.
 -   **Local Models (e.g., Mistral via LM Studio):** These models tend to be very literal. They will follow the system prompt's instructions precisely, resulting in perfectly synthesized and cited answers built *only* from the text you provide.
--   **Advanced API Models (e.g., GPT-4o, Claude 3):** These models are heavily tuned for "helpfulness" and safety. Sometimes, they will recognize a topic (like "heart failure treatment") and generate a high-quality, generic answer from their internal knowledge, only "cherry-picking" one or two citations from your provided text. Additionally, I have seen Google send blank responses when it hits a safety filter.
--   This is not a bug in Offline Oracle, but an inherent behavioral trait of the LLM. If you need strictly verifiable answers, a local model may perform more reliably than a powerful-but-creative API model.
+-   **Advanced API Models (e.g., GPT-4o, Claude 3):** These models are heavily tuned for "helpfulness" and safety. Sometimes, they will recognize a topic and generate a high-quality, generic answer from their internal knowledge, only "cherry-picking" one or two citations from your provided text. Additionally, I have seen Google send blank responses when it hits a safety filter.
+-   This is not a bug in Offline Oracle, but an inherent behavioral trait of the LLM. If you need strictly verifiable answers, a local model may perform more reliably.
 
 ## A Note on API vs. Offline Use
 
