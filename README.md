@@ -74,7 +74,7 @@ Imagine having an entire copy of Wikipedia offline and being able to ask it comp
 In `config.ini`, the `num_workers` setting controls how many parallel processes are used to parse ZIM files.
 -   By default (`num_workers = 0`), the script tries to pick a safe number. It detects your computer's **logical cores** (e.g., a 32-core CPU with SMT/Hyper-Threading has 64 logical cores) but caps the number of workers at 16.
 -   This cap is a safety measure to prevent systems with many cores but limited RAM from crashing. Each worker uses a significant amount of memory.
--   **For powerful servers (like your 32-core, 256GB RAM machine), you should manually set this value.** A good starting point is the number of **physical cores** your CPU has.
+-   **For powerful servers, you should manually set this value.** A good starting point is the number of **physical cores** your CPU has.
 
 #### Fixing `ReadTimeout` Errors with Local Models
 
